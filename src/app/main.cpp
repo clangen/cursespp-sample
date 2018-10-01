@@ -43,18 +43,20 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 
-#ifdef WIN32
-#include <cursespp/Win32Util.h>
-#undef MOUSE_MOVED
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#endif
-
 static const std::string APP_NAME = "cursespp-sample";
+static const int MAX_SIZE = 1000;
+static const int DEFAULT_WIDTH = 100;
+static const int MIN_WIDTH = 54;
+static const int DEFAULT_HEIGHT = 26;
+static const int MIN_HEIGHT = 12;
 
 using namespace cursespp;
 
-#define MIN_WIDTH 54
-#define MIN_HEIGHT 12
+static void initUtf8Filesystem() {
+    std::locale locale = std::locale();
+    std::locale utf8Locale(locale, new boost::filesystem::detail::utf8_codecvt_facet);
+    boost::filesystem::path::imbue(utf8Locale);
+}
 
 class MainLayout: public LayoutBase, public IViewRoot {
     public:
@@ -79,34 +81,21 @@ class MainLayout: public LayoutBase, public IViewRoot {
 };
 
 #ifdef WIN32
-int start(int argc, wchar_t* argv[]);
-
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCmdShow) {
-    return App::Running(APP_NAME) ? 0 : start(0, 0);
-}
+    PDC_set_resize_limits(MIN_HEIGHT, MAX_SIZE, MIN_WIDTH, MAX_SIZE);
+    resize_term(DEFAULT_HEIGHT, MIN_HEIGHT); /* must be before app init */
 
-int start(int argc, wchar_t* argv[]) {
+    if (App::Running(APP_NAME)) {
+        return 0;
+    }
 #else
 int main(int argc, char* argv[]) {
 #endif
     srand((unsigned int)time(0));
-
-    /* the following allows boost::filesystem to use utf8 on Windows */
-    std::locale locale = std::locale();
-    std::locale utf8Locale(locale, new boost::filesystem::detail::utf8_codecvt_facet);
-    boost::filesystem::path::imbue(utf8Locale);
-
-#ifdef WIN32
-    PDC_set_resize_limits(MIN_HEIGHT, 1000, MIN_WIDTH, 1000);
-    resize_term(26, 100); /* must be before app init */
-    Colors::Mode colorMode = Colors::RGB;
-#else
-    Colors::Mode colorMode = Colors::Palette;
-#endif
+    initUtf8Filesystem();
 
     App app(APP_NAME); /* must be before layout creation */
 
-    app.SetColorMode(colorMode);
     app.SetMinimumSize(MIN_WIDTH, MIN_HEIGHT);
 
     app.SetKeyHandler([&](const std::string& kn) -> bool {
