@@ -83,7 +83,7 @@ class MainLayout: public LayoutBase, public IViewRoot {
 #ifdef WIN32
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCmdShow) {
     PDC_set_resize_limits(MIN_HEIGHT, MAX_SIZE, MIN_WIDTH, MAX_SIZE);
-    resize_term(DEFAULT_HEIGHT, MIN_HEIGHT); /* must be before app init */
+    resize_term(DEFAULT_HEIGHT, DEFAULT_WIDTH); /* must be before app init */
 
     if (App::Running(APP_NAME)) {
         return 0;
