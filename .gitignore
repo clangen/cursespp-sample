@@ -2,3 +2,7 @@
 **/__output
 **/.vs
 **/*.user
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
