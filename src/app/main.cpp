@@ -36,12 +36,9 @@
 #include <cursespp/Screen.h>
 #include <cursespp/TextLabel.h>
 #include <cursespp/LayoutBase.h>
-#include <cursespp/IViewRoot.h>
 
-#include <boost/locale.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
+#include <f8n/debug/debug.h>
+#include <f8n/environment/Environment.h>
 
 static const std::string APP_NAME = "cursespp-sample";
 static const int MAX_SIZE = 1000;
@@ -52,13 +49,7 @@ static const int MIN_HEIGHT = 12;
 
 using namespace cursespp;
 
-static void initUtf8Filesystem() {
-    std::locale locale = std::locale();
-    std::locale utf8Locale(locale, new boost::filesystem::detail::utf8_codecvt_facet);
-    boost::filesystem::path::imbue(utf8Locale);
-}
-
-class MainLayout: public LayoutBase, public IViewRoot {
+class MainLayout: public LayoutBase {
     public:
         MainLayout() : LayoutBase() {
             this->label = std::make_shared<TextLabel>();
@@ -66,10 +57,6 @@ class MainLayout: public LayoutBase, public IViewRoot {
             this->SetFrameVisible(true);
             this->SetFrameTitle(APP_NAME);
             this->AddWindow(label);
-        }
-
-        virtual void ResizeToViewport() override {
-            this->MoveAndResize(0, 0, Screen::GetWidth(), Screen::GetHeight());
         }
 
         virtual void OnLayout() override {
@@ -91,8 +78,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 #else
 int main(int argc, char* argv[]) {
 #endif
-    srand((unsigned int)time(0));
-    initUtf8Filesystem();
+    f8n::env::Initialize(APP_NAME, 1);
+
+    f8n::debug::start({
+        new f8n::debug::FileBackend(f8n::env::GetDataDirectory() + "log.txt")
+    });
+
+    f8n::debug::info("main.cpp", "hello, world!");
 
     App app(APP_NAME); /* must be before layout creation */
 
@@ -103,6 +95,8 @@ int main(int argc, char* argv[]) {
     });
 
     app.Run(std::make_shared<MainLayout>());
+
+    f8n::debug::stop();
 
     return 0;
 }
