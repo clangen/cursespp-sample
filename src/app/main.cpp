@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 #endif
     f8n::env::Initialize(APP_NAME, 1);
 
-    f8n::debug::start({
+    f8n::debug::Start({
         new f8n::debug::FileBackend(f8n::env::GetDataDirectory() + "log.txt")
     });
 
@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
 
     app.Run(std::make_shared<MainLayout>());
 
-    f8n::debug::stop();
+    f8n::debug::Stop();
 
     return 0;
 }
